@@ -23,6 +23,7 @@ import {setPlatform, setVersion} from './reducers/device/deviceActions';
  * initial state
  */
 import deviceInitialState from './reducers/device/deviceInitialState';
+import authInitialState from './reducers/auth/authInitialState';
 
 /**
  *  The version of the app but not  displayed yet
@@ -37,7 +38,8 @@ var VERSION='0.0.1';
  */
 function getInitialState() {
   const _initState = {
-    device: (new deviceInitialState).set('isMobile',true).set('version',VERSION),
+    device: (new deviceInitialState).set('isMobile', true).set('version', VERSION),
+    auth: new authInitialState
   };
   return _initState;
 }

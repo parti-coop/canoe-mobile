@@ -25,24 +25,21 @@ from 'react-native';
  * The actions
  */
 import * as authActions from '../reducers/auth/authActions';
-import * as globalActions from '../reducers/global/globalActions';
 
 /**
  * The components
  */
-import ErrorAlert from '../components/ErrorAlert';
+//import ErrorAlert from '../components/ErrorAlert';
 import FormButton from '../components/FormButton';
 import LoginForm from '../components/LoginForm';
-import ItemCheckbox from '../components/ItemCheckbox';
+//import ItemCheckbox from '../components/ItemCheckbox';
 
 /**
- * The 4 states were interested in
+ * The states were interested in
  */
 const {
   LOGIN_STATE_LOGOUT,
-  LOGIN_STATE_REGISTER,
-  LOGIN_STATE_LOGIN,
-  LOGIN_STATE_FORGOT_PASSWORD
+  LOGIN_STATE_LOGIN
 } = require('../lib/constants').default;
 
 /**
@@ -70,37 +67,112 @@ var styles = StyleSheet.create({
 
 class Login extends Component {
   constructor(props) {
-    super(propos);
-    this.errorAlert = new ErrorAlert();
+    super(props);
+
+    //this.errorAlert = new ErrorAlert();
     this.state = {
       value: {
         username: this.props.auth.form.fields.username,
-        email: this.props.auth.form.fields.email,
-        password: this.props.auth.form.fields.password,
-        passwordAgain: this.props.auth.form.fields.passwordAgain
+        password: this.props.auth.form.fields.password
       }
     };
   }
+  componentWillReceiveProps(props) {
+    this.setState({
+      value: {
+        username: props.auth.form.fields.username,
+        password: props.auth.form.fields.password
+      }
+    });
+  }
+  onChange(value) {
+    if (value.username != '') {
+      this.props.actions.onAuthFormFieldChange('username', value.username);
+    }
+    if (value.password != '') {
+      this.props.actions.onAuthFormFieldChange('password', value.password);
+    }
+    this.setState(
+      {value}
+    );
+  }
+  /**
+   * ### render
+   * Setup some default presentations and render
+   */
+  render() {
+    return(
+      <View style={styles.container}>
+        <View>
+          {this._renderLoginForm()}
+          {this._renderLogInButton()}
+        </View>
+      </View>
+    );
+  }
+
+  _renderLoginForm() {
+    let self = this;
+    switch(this.props.auth.form.state) {
+    case(LOGIN_STATE_LOGIN):
+      return(
+        <View style={styles.inputs}>
+          <LoginForm
+            form={this.props.auth.form}
+            value={this.state.value}
+            onChange={self.onChange.bind(self)}
+          />
+        </View>
+      );
+    }//switch
+  }
+  _renderLogInButton() {
+    switch(this.props.auth.form.state) {
+    /**
+     * Render the button for logging out and call the logout action
+     */
+    case(LOGIN_STATE_LOGOUT):
+      return this._renderFormButton('Log out', () => {
+        this.props.actions.logout();
+      });
+      break;
+    /**
+     * Render the button for logging in and call the login action
+     */
+    case(LOGIN_STATE_LOGIN):
+      return this._renderFormButton('Log in', () => {
+        this.props.actions.login(this.props.auth.form.fields.username, this.props.auth.form.fields.password);
+      });
+      break;
+    }//switch
+  }
+  _renderFormButton(loginButtonText, onButtonPress) {
+    let self = this;
+    return (
+      <FormButton
+        isDisabled={!this.props.auth.form.isValid || this.props.auth.form.isFetching}
+        onPress={onButtonPress.bind(self)}
+        buttonText={loginButtonText}/>
+    );
+  }
 }
+
 /**
  * ## Redux boilerplate
  */
 const actions = [
-  authActions,
-  globalActions
+  authActions
 ];
 
 function mapStateToProps(state) {
-  return {
-      ...state
-  };
+  return { ...state };
 }
 
 function mapDispatchToProps(dispatch) {
   const creators = Map()
-          .merge(...actions)
-          .filter(value => typeof value === 'function')
-          .toObject();
+    .merge(...actions)
+    .filter(value => typeof value === 'function')
+    .toObject();
 
   return {
     actions: bindActionCreators(creators, dispatch),

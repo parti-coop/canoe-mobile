@@ -13,7 +13,7 @@
 import InitialState from './deviceInitialState';
 
 /**
- * Device actions to test
+ * Device actions
  */
 const {
   SET_PLATFORM,

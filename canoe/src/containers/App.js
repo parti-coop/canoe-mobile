@@ -21,15 +21,20 @@ import React, {
 /**
  * Project imports
  */
+const Login = require('./Login').default;
 
 /**
  * Project actions
  */
+import * as authActions from '../reducers/auth/authActions';
 import * as deviceActions from '../reducers/device/deviceActions';
 
 /**
  * We only have one state to worry about
  */
+const {
+  LOGIN_STATE_LOGOUT
+} = require('../lib/constants').default;
 
 /**
  * ## App class
@@ -49,7 +54,7 @@ let App = React.createClass({
     });
   },
   render: function() {
-    return (this.state.loggedIn ? <Text>Login OK</Text> : <Text>Need to Login</Text>);
+    return (this.state.loggedIn ? <Text>Login OK</Text> : <Login/>);
   }
 });
 
@@ -57,7 +62,8 @@ let App = React.createClass({
  * ## Redux boilerplate
  */
 const actions = [
-  deviceActions
+  deviceActions,
+  authActions
 ];
 
 /**

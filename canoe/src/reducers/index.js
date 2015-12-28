@@ -9,6 +9,7 @@
 /**
  * ## Imports
  */
+import auth from './auth/authReducer';
 import device from './device/deviceReducer';
 import { combineReducers } from 'redux';
 
@@ -19,7 +20,7 @@ import { combineReducers } from 'redux';
  * EVERY TIME there is a basic action
  */
 const rootReducer = combineReducers({
-  device
+  device, auth
 });
 
 export default rootReducer;
