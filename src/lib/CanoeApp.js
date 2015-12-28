@@ -21,15 +21,13 @@ import _ from 'underscore';
 
 export default class CanoeApp {
   /**
-   * ## Parse
+   * ## Canoe
    *
    * constructor sets the default keys required by Parse.com
    * if a user is logged in, we'll need the sessionToken
    *
    */
   constructor(sessionToken) {
-    this._applicationId = CONFIG.CANOE_APP.APP_ID;
-    this._restAPIKey = CONFIG.CANOE_APP.REST_API_KEY;
     this._masterKey = null;
     this._sessionToken = _.isUndefined(sessionToken) ? null :  sessionToken;
     this.API_BASE_URL= 'https://canoe.parti.xyz';
@@ -70,18 +68,10 @@ export default class CanoeApp {
     }, opts);
 
     var reqOpts = {
-      method: opts.method,
-      headers: {
-        'X-Parse-Application-Id': this._applicationId,
-        'X-Parse-REST-API-Key': this._restAPIKey
-      }
+      method: opts.method
     };
     if (this._sessionToken) {
       reqOpts.headers['X-Parse-Session-Token'] = this._sessionToken;
-    }
-
-    if (this._masterKey) {
-      reqOpts.headers['X-Parse-Master-Key'] = this.masterKey;
     }
 
     if (opts.method === 'POST' || opts.method === 'PUT') {
