@@ -19,6 +19,7 @@ const {
   SESSION_TOKEN_FAILURE,
   LOGIN_STATE_LOGOUT,
   LOGIN_STATE_LOGIN,
+  LOGIN_FAILURE,
   ON_AUTH_FORM_FIELD_CHANGE
 } = require('../../lib/constants').default;
 
@@ -80,6 +81,15 @@ export default function authReducer(state = initialState, action) {
         .setIn(['form', 'fields', field], value)
         .setIn(['form', 'error'], null)
     );
+  /**
+   * ### Access to CanoeApp denied or failed
+   * The fetching is done, but save the error
+   * for display to the user
+   */
+  case LOGIN_FAILURE:
+    return state
+      .setIn(['form', 'isFetching'], false)
+      .setIn(['form', 'error'], action.payload);
   }
   /**
    * ## Default

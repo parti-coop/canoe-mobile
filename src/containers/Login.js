@@ -29,7 +29,7 @@ import * as authActions from '../reducers/auth/authActions';
 /**
  * The components
  */
-//import ErrorAlert from '../components/ErrorAlert';
+import ErrorAlert from '../components/ErrorAlert';
 import FormButton from '../components/FormButton';
 import LoginForm from '../components/LoginForm';
 //import ItemCheckbox from '../components/ItemCheckbox';
@@ -69,7 +69,7 @@ class Login extends Component {
   constructor(props) {
     super(props);
 
-    //this.errorAlert = new ErrorAlert();
+    this.errorAlert = new ErrorAlert();
     this.state = {
       value: {
         username: this.props.auth.form.fields.username,
@@ -101,6 +101,7 @@ class Login extends Component {
    * Setup some default presentations and render
    */
   render() {
+    this.errorAlert.checkError(this.props.auth.form.error);
     return(
       <View style={styles.container}>
         <View>
