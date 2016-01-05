@@ -15,13 +15,16 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux/native';
 import { Map } from 'immutable';
 import React, {
-  Text
+  Text,
+  View,
+  StyleSheet
 } from 'react-native';
 
 /**
  * Project imports
  */
 const Login = require('./Login').default;
+const Profile = require('./Profile').default;
 
 /**
  * Project actions
@@ -30,11 +33,15 @@ import * as authActions from '../reducers/auth/authActions';
 import * as deviceActions from '../reducers/device/deviceActions';
 
 /**
- * We only have one state to worry about
+ * ## Styles
  */
-const {
-  LOGIN_STATE_LOGOUT
-} = require('../lib/constants').default;
+var styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }
+});
 
 /**
  * ## App class
@@ -45,17 +52,35 @@ let App = React.createClass({
    */
   getInitialState: function() {
     return {
-      loggedIn: false
+      loggedIn: null
     };
   },
   componentWillReceiveProps: function(props) {
-    this.setState ({
-      loggedIn: false
-    });
+    if(props.auth.session !== null) {
+      this.setState ({
+        loggedIn: (props.auth.session !== false)
+      });
+    }
+  },
+  componentDidMount: function() {
+    this.props.actions.getSession();
   },
   render: function() {
-    return (this.state.loggedIn ? <Text>Login OK</Text> : <Login/>);
-  }
+    if (this.state.loggedIn == null) {
+      return this.renderLoadingView();
+    }
+
+    return (this.state.loggedIn ? <Profile/> : <Login/>);
+  },
+  renderLoadingView: function() {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>
+          Loading ...
+        </Text>
+      </View>
+    );
+  },
 });
 
 /**

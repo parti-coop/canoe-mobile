@@ -14,9 +14,6 @@
  * ## Import
  */
 const { Record } = require('immutable');
-const {
-  LOGIN_STATE_LOGIN
-} = require('../../lib/constants').default;
 
 /**
  * ## Form
@@ -24,7 +21,6 @@ const {
  * fields it contains.
  */
 const Form = Record({
-  state: LOGIN_STATE_LOGIN,
   disabled: false,
   error: null,
   isValid: false,
@@ -40,6 +36,7 @@ const Form = Record({
  * The form is set
  */
 var InitialState = Record({
-  form: new Form
+  form: new Form,
+  session: null
 });
 export default InitialState;

@@ -9,17 +9,26 @@
  */
 const InitialState = require('./authInitialState').default;
 const formValidation = require('./authFormValidation').default;
+const { Record } = require('immutable');
 
 /**
  * Auth actions
  */
 const {
-  SESSION_TOKEN_REQUEST,
-  SESSION_TOKEN_SUCCESS,
-  SESSION_TOKEN_FAILURE,
-  LOGIN_STATE_LOGOUT,
-  LOGIN_STATE_LOGIN,
+  SESSION_REQUEST,
+  SESSION_SUCCESS,
+  SESSION_FAILURE,
+
+  LOGIN_REQUEST,
+  LOGIN_SUCCESS,
   LOGIN_FAILURE,
+
+  LOGOUT_REQUEST,
+  LOGOUT_SUCCESS,
+  LOGOUT_FAILURE,
+
+  CLEAR_LOGIN_FORM,
+
   ON_AUTH_FORM_FIELD_CHANGE
 } = require('../../lib/constants').default;
 
@@ -33,39 +42,40 @@ export default function authReducer(state = initialState, action) {
   if (!(state instanceof InitialState)) return initialState.mergeDeep(state);
 
   switch (action.type) {
-  case SESSION_TOKEN_REQUEST:
-    let nextState =  state
+  case LOGIN_REQUEST:
+  case LOGOUT_REQUEST:
+  case SESSION_REQUEST:
+    return state
       .setIn(['form', 'isFetching'], true)
       .setIn(['form', 'error'], null);
-    return nextState;
-  case SESSION_TOKEN_SUCCESS:
-  case SESSION_TOKEN_FAILURE:
-    return state.setIn(['form', 'isFetching'], false);
+  case LOGIN_SUCCESS:
+  case SESSION_SUCCESS:
+    return state
+      .setIn(['form', 'isFetching'], false)
+      .setIn(['session'], action.payload);
+  case LOGOUT_SUCCESS:
+    return state
+      .setIn(['form', 'isFetching'], false)
+      .setIn(['session'], false);
+  case LOGIN_FAILURE:
+  case LOGOUT_FAILURE:
+  case SESSION_FAILURE:
+    return state
+      .setIn(['form', 'isFetching'], false)
+      .setIn(['session'], null);
   /**
    * ### Logout state
    * The user has successfully access Parse.com
    * Clear the form's error and all the fields
    */
-  case LOGIN_STATE_LOGOUT:
-    return formValidation(state
-        .setIn(['form', 'state'], action.type)
+  case CLEAR_LOGIN_FORM:
+    return formValidation(
+      state
         .setIn(['form', 'error'], null)
         .setIn(['form', 'fields', 'username'], '')
         .setIn(['form', 'fields', 'password'], '')
     );
-  /**
-   * ### Loggin in state
-   * The user isn't logged in, and needs to
-   * login, register or reset password
-   *
-   * Set the form state and clear any errors
-   */
-  case LOGIN_STATE_LOGIN:
-    return formValidation(
-      state
-        .setIn(['form', 'state'], action.type)
-        .setIn(['form', 'error'], null)
-    );
+
   /**
    * ### Auth form field change
    *
@@ -81,15 +91,6 @@ export default function authReducer(state = initialState, action) {
         .setIn(['form', 'fields', field], value)
         .setIn(['form', 'error'], null)
     );
-  /**
-   * ### Access to CanoeApp denied or failed
-   * The fetching is done, but save the error
-   * for display to the user
-   */
-  case LOGIN_FAILURE:
-    return state
-      .setIn(['form', 'isFetching'], false)
-      .setIn(['form', 'error'], action.payload);
   }
   /**
    * ## Default

@@ -14,44 +14,54 @@
  *
  * The actions supported
  */
+import CONFIG from '../../lib/config';
 const {
+  SESSION_REQUEST,
+  SESSION_SUCCESS,
+  SESSION_FAILURE,
+
   LOGIN_REQUEST,
   LOGIN_SUCCESS,
   LOGIN_FAILURE,
+
   LOGOUT_REQUEST,
   LOGOUT_SUCCESS,
   LOGOUT_FAILURE,
-  LOGIN_STATE_LOGIN,
-  LOGIN_STATE_LOGOUT,
+
+  CLEAR_LOGIN_FORM,
+
   ON_AUTH_FORM_FIELD_CHANGE
 } = require('../../lib/constants').default;
+const  _ = require('underscore');
 
 /**
  * Project requirements
  */
 const CanoeApp = require('../../lib/CanoeApp').default;
-const AppAuthToken = require('../../lib/AppAuthToken').default;
+const AppSession = require('../../lib/AppSession').default;
 
-/**
- * ## State actions
- * controls which form is displayed to the user
- * as in login, logout
- */
-export function logoutState() {
+export function clearLoginForm() {
   return {
-    type: LOGIN_STATE_LOGOUT
-  };
-}
-
-export function loginState() {
-  return {
-    type: LOGIN_STATE_LOGIN
+    type: CLEAR_LOGIN_FORM
   };
 }
 
 /**
  * ## Logout actions
  */
+export function logout() {
+  return dispatch => {
+    dispatch(logoutRequest());
+    return new  AppSession().delete()
+      .then(() => {
+        dispatch(logoutSuccess());
+      })
+      .catch((error) => {
+        dispatch(logoutFailure(error));
+      });
+  };
+}
+
 export function logoutRequest() {
   return {
     type: LOGOUT_REQUEST
@@ -69,6 +79,7 @@ export function logoutFailure(error) {
     payload: error
   };
 }
+
 /**
  * ## onAuthFormFieldChange
  * Set the payload so the reducer can work on it
@@ -79,13 +90,14 @@ export function onAuthFormFieldChange(field,value) {
     payload: {field: field, value: value}
   };
 }
+
 /**
  * ## Login
  * @param {string} username - user's name
  * @param {string} password - user's password
  *
  * After calling Parse, if response is good, save the json
- * which is the currentUser which contains the sessionToken
+ * which is the currentUser which contains the session
  *
  * If successful, set the state to logout
  * otherwise, dispatch a failure
@@ -93,22 +105,47 @@ export function onAuthFormFieldChange(field,value) {
 export function login(username,  password) {
   return dispatch => {
     dispatch(loginRequest());
-    return new CanoeApp().login({
+    return new CanoeApp().authenticate({
       username: username,
-      password: password
+      password: password,
+      client: CONFIG.CANOE_APP.CLIENT_ID,
+      server: CONFIG.CANOE_APP.SERVER_ID
     })
     .then((response) => {
       if (response.status === 200 || response.status === 201) {
         var json = JSON.parse(response._bodyInit);
-        return saveSessionToken(response, json);
+        var token = json["token"]
+        var email = json["email"]
+        return new CanoeApp().authorize({
+          email: email,
+          token: token,
+          client: CONFIG.CANOE_APP.CLIENT_ID
+        })
+        .then((response) => {
+          if (response.status === 200 || response.status === 201) {
+            var session = JSON.parse(response._bodyInit);
+            return saveSession(response, session)
+          }
+          return response;
+        })
+        .then((response) => {
+          if (response.status === 200 || response.status === 201) {
+            var session = JSON.parse(response._bodyInit);
+            dispatch(clearLoginForm());
+            dispatch(loginSuccess(session));
+          } else {
+            dispatch(loginFailure(JSON.parse(response._bodyInit)));
+          }
+          return response;
+        })
+        .catch((error) => {
+          dispatch(loginFailure(error));
+        });
       }
       return response;
     })
     .then((response) => {
-      if (response.status === 200 || response.status === 201) {
-        dispatch(logoutState());
-        dispatch(loginSuccess());
-      } else {
+      if (response.status !== 200 && response.status !== 201) {
         dispatch(loginFailure(JSON.parse(response._bodyInit)));
       }
       return response;
@@ -119,6 +156,7 @@ export function login(username,  password) {
 
   };
 }
+
 /**
  * ## Login actions
  */
@@ -128,9 +166,10 @@ export function loginRequest() {
   };
 }
 
-export function loginSuccess() {
+export function loginSuccess(session) {
   return {
-    type: LOGIN_SUCCESS
+    type: LOGIN_SUCCESS,
+    payload: session
   };
 }
 
@@ -142,13 +181,59 @@ export function loginFailure(error) {
 }
 
 /**
- * ## saveSessionToken
- * @param {Object} response - to return to keep the promise chain
- * @param {Object} json - the currentUser from Parse.com w/ sessionToken
+ * ## getSession
+ * If AppSession has the session, the user is logged in
+ * so set the state to logout.
+ * Otherwise, the user will default to the login in screen.
  */
-export function saveSessionToken(response, json) {
-  return new AppAuthToken().storeSessionToken(json)
+export function getSession() {
+  return dispatch => {
+    dispatch(sessionRequest());
+    return new AppSession().get()
+      .then((session) => {
+        if(session != null) {
+          dispatch(clearLoginForm());
+          dispatch(sessionRequestSuccess(session));
+        } else {
+          dispatch(clearLoginForm());
+          dispatch(sessionRequestSuccess(false));
+        }
+      })
+      .catch((error) => {
+        dispatch(sessionRequestFailure(error));
+      });
+  };
+}
+/**
+ * ## Session actions
+ */
+export function sessionRequest() {
+  return {
+    type: SESSION_REQUEST
+  };
+}
+export function sessionRequestSuccess(session) {
+  return {
+    type: SESSION_SUCCESS,
+    payload: session
+  };
+}
+export function sessionRequestFailure(error) {
+  return {
+    type: SESSION_FAILURE,
+    payload: _.isUndefined(error) ? null : error
+  };
+}
+
+/**
+ * ## saveSession
+ * @param {Object} response - to return to keep the promise chain
+ * @param {Object} json - the currentUser from Parse.com w/ session
+ */
+export function saveSession(response, session) {
+  return new AppSession().store(session)
     .then(() => {
       return response;
     });
 }
+

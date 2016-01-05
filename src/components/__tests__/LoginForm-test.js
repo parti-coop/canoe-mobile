@@ -1,13 +1,5 @@
 /**
  * # LoginForm-test.js
- *
- * This class tests that the LoginForm renders correctly under
- * 4 states of the Login component, namely, logging in,
- * resetting the password and registration
- *
- * *Note:* if you want to understand the structures here, add a
- * ```console.log``` and then ```npm test```.
- *
  */
 
 'use strict';
@@ -20,10 +12,6 @@ jest.autoMockOff();
  */
 const React = require('react-native');
 const utils = require('react-addons-test-utils');
-
-const {
-  LOGIN_STATE_LOGIN
-} = require('../../lib/constants').default;
 
 /**
  * ## Under test
@@ -77,9 +65,6 @@ describe('LoginForm', () => {
   }
   /**
    * ### checkLoginForm
-   *
-   * Depending on the state, this function validates that the rendered
-   * component has the correct data
    */
   function checkLoginForm(props) {
     const {output} = renderLoginForm(props);
@@ -88,26 +73,23 @@ describe('LoginForm', () => {
     const fields = getFields(output);
     const values = getValues(output);
 
-    if (props.form.state === LOGIN_STATE_LOGIN) {
-      expect(values.username).toEqual(props.value.username);
-      expect(fields.username.editable).toEqual(!props.form.isFetching);
+    expect(values.username).toEqual(props.value.username);
+    expect(fields.username.editable).toEqual(!props.form.isFetching);
 
-      expect(values.password).toEqual(props.value.password);
-      expect(fields.password.editable).toEqual(!props.form.isFetching);
-    }
+    expect(values.password).toEqual(props.value.password);
+    expect(fields.password.editable).toEqual(!props.form.isFetching);
   }
 
   /**
    * ## Test Log in
    */
-  describe('LOGIN_STATE_LOGIN', () => {
+  describe('Log in', () => {
     /**
      * ### it should should be nice
      */
     it('should be nice', () => {
       let form = {
         isFetching: false,
-        state: LOGIN_STATE_LOGIN
       };
 
       let value = {
@@ -130,7 +112,6 @@ describe('LoginForm', () => {
     it('should display  errors and  values', () => {
       let form = {
         isFetching: false,
-        state: LOGIN_STATE_LOGIN
       };
 
       let value = {
@@ -153,7 +134,6 @@ describe('LoginForm', () => {
     it('should not be editable if fetching', () => {
       let form = {
         isFetching: true,
-        state: LOGIN_STATE_LOGIN
       };
 
       let value = {

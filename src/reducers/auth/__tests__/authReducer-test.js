@@ -5,12 +5,11 @@ jest.autoMockOff();
  * ## Auth actions
  */
 const {
-  SESSION_TOKEN_REQUEST,
-  SESSION_TOKEN_SUCCESS,
-  SESSION_TOKEN_FAILURE,
+  SESSION_REQUEST,
+  SESSION_SUCCESS,
+  SESSION_FAILURE,
 
-  LOGIN_STATE_LOGOUT,
-  LOGIN_STATE_LOGIN,
+  CLEAR_LOGIN_FORM,
   ON_AUTH_FORM_FIELD_CHANGE
 
 } = require('../../../lib/constants').default;
@@ -26,10 +25,10 @@ const authReducer = require('../authReducer').default;
  * authReducer
  */
 describe('authReducer', () => {
-  describe('SESSION-TOKEN-REQUEST', () => {
+  describe('SESSION-REQUEST', () => {
     it('starts fetching', () => {
       const action = {
-        type: SESSION_TOKEN_REQUEST
+        type: SESSION_REQUEST
       };
       let next = authReducer(undefined, action);
 
@@ -38,18 +37,28 @@ describe('authReducer', () => {
     });
 
     it('finishes fetching on success', () => {
+      const session = {
+        user: {
+          id: 100,
+          email: 'test@gmail.com',
+          nickname: 'ok'
+        },
+        token: 'token'
+      };
       const action = {
-        type: SESSION_TOKEN_SUCCESS
+        type: SESSION_SUCCESS,
+        payload: session
       };
       let next = authReducer(undefined, action);
 
       expect(next.form.isFetching).toBe(false);
       expect(next.form.error).toBe(null);
+      expect(next.session).toBe(session);
     });
 
     it('finishes fetching on failure', () => {
       const action = {
-        type: SESSION_TOKEN_FAILURE
+        type: SESSION_FAILURE
       };
       let next = authReducer(undefined, action);
 
@@ -59,10 +68,10 @@ describe('authReducer', () => {
   });
 
   /**
-   * ### The user logs out
+   * ### Clear login form
    *
    */
-  describe('LOGIN_STATE_LOGOUT', () => {
+  describe('CLEAR_LOGIN_FORM', () => {
     let initialState = null;
     /**
      * #### Get a valid state
@@ -75,38 +84,18 @@ describe('authReducer', () => {
     });
 
     /**
-     * #### form is valid to logout
-     *
-     * Should have a valid form and in the Logged out state
+     * #### clear login form
      */
-    it('form is valid to logout', () => {
+    it('form is invalid after clearing fields', () => {
       const action = {
-        type: LOGIN_STATE_LOGOUT
-      };
-      let next = authReducer(initialState, action);
-
-      expect(next.form.state).toBe(LOGIN_STATE_LOGOUT);
-      expect(next.form.isValid).toBe(true);
-    });
-
-    /**
-     * #### form is valid to logout even with form fields
-     *
-     * Even if the form were to have some data, once they log out that
-     * form should be cleared, valid and in the Logged out state
-     *
-     */
-    it('form is valid to logout even with form fields', () => {
-      const action = {
-        type: LOGIN_STATE_LOGOUT
+        type: CLEAR_LOGIN_FORM
       };
       let init = authReducer(initialState, action);
       let withFields = init
         .setIn(['form','fields','username'],'dummy')
         .setIn(['form','fields','password'],'foo')
       let next = authReducer(withFields, action);
-      expect(next.form.state).toBe(LOGIN_STATE_LOGOUT);
-      expect(next.form.isValid).toBe(true);
+      expect(next.form.isValid).toBe(false);
       expect(next.form.fields.username).toBe('');
       expect(next.form.fields.password).toBe('');
     });
@@ -117,7 +106,7 @@ describe('authReducer', () => {
    * ### The user logs in
    *
    */
-  describe('LOGIN_STATE_LOGIN', () => {
+  describe('ON_AUTH_FORM_FIELD_CHANGE', () => {
     let initialState = null;
     /**
      * #### Get a valid state
@@ -135,13 +124,7 @@ describe('authReducer', () => {
      * empty fields are not allowed
      */
     it('form is not valid with empty fields', () => {
-      const action = {
-        type: LOGIN_STATE_LOGIN
-      };
-      let next = authReducer(initialState, action);
-
-      expect(next.form.state).toBe(LOGIN_STATE_LOGIN);
-      expect(next.form.isValid).toBe(false);
+      expect(initialState.form.isValid).toBe(false);
     });
     /**
      * #### form is  valid with valid fields
@@ -161,17 +144,11 @@ describe('authReducer', () => {
 
       let userNameState = authReducer(initialState,
                                       userNameFieldChangeAction);
-      let passwordState = authReducer(userNameState,
-                                      passwordFieldChangeAction);
+      let next = authReducer(userNameState,
+                             passwordFieldChangeAction);
 
-      const action = {
-        type: LOGIN_STATE_LOGIN
-      };
-
-      let next = authReducer(passwordState, action);
-      expect(next.form.state).toBe(LOGIN_STATE_LOGIN);
       expect(next.form.isValid).toBe(true);
     });
-  });//LOGIN_STATE_LOGIN
+  });
 });
 

@@ -1,7 +1,11 @@
 module.exports = {
   CANOE_APP: {
-    APP_ID: '',
-    REST_API_KEY: '',
-    SESSION_TOKEN_KEY: 'SESSION_TOKEN_KEY'
+    SESSION_KEY: 'SESSION_KEY',
+    BASE_URL: 'http://canoe.parti.xyz',
+    SERVER_ID: 'canoe.parti.xyz',
+    CLIENT_ID: 'fake-uuid'
+  },
+  SSO: {
+    BASE_URL: 'http://sso.parti.xyz'
   }
 }

@@ -68,7 +68,7 @@ fdescribe('FormButton', () => {
    * ### it should be fine
    * the containing object should be a view
    */
-  fit('should be fine', () => {
+  it('should be fine', () => {
     const {output} = formButton;
   });
 

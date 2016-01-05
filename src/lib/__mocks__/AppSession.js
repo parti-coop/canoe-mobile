@@ -10,31 +10,34 @@
  * Need to still treat as async
  */
 require('regenerator/runtime');
-export default class AppAuthToken {
+export default class AppSession {
   /**
-   * ## AppAuthToken
+   * ## AppSession
    *
-   * ### getSessionToken
+   * ### get
    * @returns {Object} sessionToken
    */
-  async getSessionToken () {
+  async get() {
     return await {
-      sessionToken: {
-        sessionToken: 'token'
-      }
+      user: {
+        id: 100,
+        email: 'test@gmail.com',
+        nickname: 'ok'
+      },
+      token: 'token'
     };
   }
   /**
-   * ### storeSessionToken
+   * ### store
    * @returns {Object} empty
    */
-  async storeSessionToken() {
+  async store() {
     return await {};
   }
   /**
-   * ### deleteSessionToken
+   * ### delete
    */
-  async deleteSessionToken () {
+  async delete() {
     return await {};
   }
 }

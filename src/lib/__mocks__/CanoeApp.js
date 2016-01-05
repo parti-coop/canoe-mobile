@@ -28,11 +28,11 @@ export default class CanoeApp  {
     this.response._bodyInit = _bodyInit;
   }
 
-  /**
-   * ### login
-   * @returns {Object} response
-   */
-  async login() {
+  async authenticate() {
+    return await this.response;
+  }
+
+  async authorize() {
     return await this.response;
   }
 }

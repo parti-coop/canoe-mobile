@@ -18,9 +18,12 @@ import React,
   StyleSheet,
   Text,
   TouchableHighlight,
-  View
+  View,
+  Image
 }
 from 'react-native';
+import CONFIG from '../lib/config';
+
 /**
  * The actions
  */
@@ -29,10 +32,7 @@ import * as authActions from '../reducers/auth/authActions';
 /**
  * The components
  */
-import ErrorAlert from '../components/ErrorAlert';
 import FormButton from '../components/FormButton';
-import LoginForm from '../components/LoginForm';
-//import ItemCheckbox from '../components/ItemCheckbox';
 
 /**
  * ## Styles
@@ -50,76 +50,89 @@ var styles = StyleSheet.create({
   }
 });
 
-class Login extends Component {
+var styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
+  },
+  sessionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginTop: 100
+  },
+  logOutButtonContainer: {
+    flex: 1,
+  },
+  nickname: {
+    fontSize: 20,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  email: {
+    textAlign: 'center',
+  },
+  image: {
+    width: 53,
+    height: 81,
+  },
+});
+
+
+class Profile extends Component {
   constructor(props) {
     super(props);
-
-    this.errorAlert = new ErrorAlert();
+    console.log(props);
     this.state = {
       value: {
-        username: this.props.auth.form.fields.username,
-        password: this.props.auth.form.fields.password
+        session: this.props.auth.session
       }
     };
   }
   componentWillReceiveProps(props) {
     this.setState({
       value: {
-        username: props.auth.form.fields.username,
-        password: props.auth.form.fields.password
+        session: this.props.auth.session
       }
     });
-  }
-  onChange(value) {
-    if (value.username != '') {
-      this.props.actions.onAuthFormFieldChange('username', value.username);
-    }
-    if (value.password != '') {
-      this.props.actions.onAuthFormFieldChange('password', value.password);
-    }
-    this.setState(
-      {value}
-    );
   }
   /**
    * ### render
    * Setup some default presentations and render
    */
   render() {
-    this.errorAlert.checkError(this.props.auth.form.error);
+    let current_user = this.props.auth.session.user;
     return(
       <View style={styles.container}>
-        <View>
-          {this._renderLoginForm()}
-          {this._renderLogInButton()}
+        <View style={styles.sessionContainer}>
+          <Image
+            source={{uri: CONFIG.SSO_APP.BASE_URL + '/users/images/' + current_user.nickname}}
+            style={styles.image}
+          />
+          <View style={styles.byline}>
+            <Text style={styles.email}>{current_user.email}</Text>
+            <Text style={styles.nickname}>{current_user.nickname}</Text>
+          </View>
+        </View>
+        <View style={styles.logOutButtonContainer}>
+          {this._renderLogOutButton()}
         </View>
       </View>
     );
   }
 
-  _renderLoginForm() {
-    let self = this;
-    return(
-      <View style={styles.inputs}>
-        <LoginForm
-          form={this.props.auth.form}
-          value={this.state.value}
-          onChange={self.onChange.bind(self)}
-        />
-      </View>
-    );
-  }
-
-  _renderLogInButton() {
+  _renderLogOutButton() {
     let self = this;
     let onButtonPress = () => {
-      this.props.actions.login(this.props.auth.form.fields.username, this.props.auth.form.fields.password);
+      this.props.actions.logout();
     };
     return (
       <FormButton
-        isDisabled={!this.props.auth.form.isValid || this.props.auth.form.isFetching}
-        onPress={onButtonPress.bind(self)}
-        buttonText={'Log in'}/>
+        buttonText={'Log out'}
+        onPress={onButtonPress.bind(self)}/>
     );
   }
 }
@@ -147,4 +160,4 @@ function mapDispatchToProps(dispatch) {
   };
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Login);
+export default connect(mapStateToProps, mapDispatchToProps)(Profile);

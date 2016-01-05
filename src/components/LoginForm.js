@@ -18,13 +18,6 @@ const {
 } = React;
 
 /**
- * States of login display
- */
-const {
-  LOGIN_STATE_LOGIN
-} = require('../lib/constants').default;
-
-/**
  *  The fantastic little form library
  */
 const t = require('tcomb-form-native');
@@ -58,6 +51,7 @@ var LoginForm = React.createClass({
 
     let username_field = {
       label: 'Username',
+      autoCapitalize: 'none',
       editable: !this.props.form.isFetching,
     };
 

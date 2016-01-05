@@ -12,7 +12,7 @@ jest.autoMockOff();
  *
  * We don't want to use the devices storage, nor actually call Parse.com
  */
-jest.mock('../../../lib/AppAuthToken');
+jest.mock('../../../lib/AppSession');
 jest.mock('../../../lib/CanoeApp');
 
 /**
@@ -40,9 +40,13 @@ const {
   LOGIN_REQUEST,
   LOGIN_SUCCESS,
   LOGIN_FAILURE,
-
-  LOGIN_STATE_LOGOUT,
-  LOGIN_STATE_LOGIN,
+  LOGOUT_REQUEST,
+  LOGOUT_SUCCESS,
+  LOGOUT_FAILURE,
+  CLEAR_LOGIN_FORM,
+  SESSION_REQUEST,
+  SESSION_SUCCESS,
+  SESSION_FAILURE,
 
   ON_AUTH_FORM_FIELD_CHANGE
 } = require('../../../lib/constants').default;
@@ -55,13 +59,9 @@ describe('authActions', () => {
   /**
    * ### simple tests that prove the actions have the specific type
    */
-  it('should set logoutState', () => {
-    expect(LOGIN_STATE_LOGOUT).toBeDefined();
-    expect(actions.logoutState()).toEqual({ type: LOGIN_STATE_LOGOUT });
-  });
-  it('should set loginState', () => {
-    expect(LOGIN_STATE_LOGIN).toBeDefined();
-    expect(actions.loginState()).toEqual({ type: LOGIN_STATE_LOGIN });
+  it('should set clearLoginForm', () => {
+    expect(CLEAR_LOGIN_FORM).toBeDefined();
+    expect(actions.clearLoginForm()).toEqual({ type: CLEAR_LOGIN_FORM });
   });
   it('should set loginRequest', () => {
     expect(LOGIN_REQUEST).toBeDefined();
@@ -77,30 +77,21 @@ describe('authActions', () => {
     expect(actions.loginFailure(error))
       .toEqual({ type: LOGIN_FAILURE, payload: error });
   });
-  // it('should set logoutRequest', () => {
-  //   expect(actions.logoutRequest()).toEqual({ type: LOGOUT_REQUEST });
-  // });
-  // it('should set logoutSuccess', () => {
-  //   expect(actions.logoutSuccess()).toEqual({ type: LOGOUT_SUCCESS });
-  // });
-  // it('should set logoutFailure', () => {
-  //   let error = { error: 'test error' };
-  //   expect(actions.logoutFailure(error))
-  //     .toEqual({ type:LOGOUT_FAILURE, payload: error});
-  // });
-  // it('should set sessionTokenRequest', () => {
-  //   expect(actions.sessionTokenRequest()).toEqual({ type: SESSION_TOKEN_REQUEST });
-  // });
-  // it('should set sessionTokenRequestSuccess', () => {
-  //   let token = { token: 'thisisthetoken' };
-  //   expect(actions.sessionTokenRequestSuccess(token))
-  //     .toEqual({ type: SESSION_TOKEN_SUCCESS, payload: token });
-  // });
-  // it('should set sessionTokenRequestFailure', () => {
-  //   let error = { error: 'thisistheerror' };
-  //   expect(actions.sessionTokenRequestFailure(error))
-  //     .toEqual({ type: SESSION_TOKEN_FAILURE, payload: error });
-  // });
+  it('should set logoutRequest', () => {
+    expect(LOGOUT_REQUEST).toBeDefined();
+    expect(actions.logoutRequest()).toEqual({ type: LOGOUT_REQUEST });
+  });
+  it('should set logoutSuccess', () => {
+    expect(LOGOUT_SUCCESS).toBeDefined();
+    expect(actions.logoutSuccess()).toEqual({ type: LOGOUT_SUCCESS });
+  });
+  it('should set logoutFailure', () => {
+    expect(LOGOUT_FAILURE).toBeDefined();
+    let error = { error: 'test error' };
+    expect(actions.logoutFailure(error))
+      .toEqual({ type:LOGOUT_FAILURE, payload: error});
+  });
+
   it('should set onAuthFormFieldChange', () => {
     expect(ON_AUTH_FORM_FIELD_CHANGE).toBeDefined();
     let field = 'field';
@@ -112,11 +103,50 @@ describe('authActions', () => {
   pit('should login', () => {
     const expectedActions = [
       {type: LOGIN_REQUEST},
-      {type: LOGIN_STATE_LOGOUT},
+      {type: CLEAR_LOGIN_FORM},
       {type: LOGIN_SUCCESS}
     ];
 
     const store = mockStore({}, expectedActions);
     return store.dispatch(actions.login('foo','bar'));
+  });
+
+  pit('should logout', () => {
+    const expectedActions = [
+      {type: LOGOUT_REQUEST},
+      {type: LOGOUT_SUCCESS}
+    ];
+
+    const store = mockStore({}, expectedActions);
+    return store.dispatch(actions.logout());
+  });
+
+  it('should set sessionRequest', () => {
+    expect(SESSION_REQUEST).toBeDefined();
+    expect(actions.sessionRequest()).toEqual({ type: SESSION_REQUEST });
+  });
+  it('should set sessionRequestSuccess', () => {
+    expect(SESSION_SUCCESS).toBeDefined();
+    let token = { token: 'thisisthetoken' };
+    expect(actions.sessionRequestSuccess(token))
+      .toEqual({ type: SESSION_SUCCESS, payload: token });
+  });
+  it('should set sessionRequestFailure', () => {
+    let error = { error: 'thisistheerror' };
+    expect(actions.sessionRequestFailure(error))
+      .toEqual({ type: SESSION_FAILURE, payload: error });
+  });
+
+  pit('should getSession', () => {
+    expect(SESSION_REQUEST).toBeDefined();
+    expect(SESSION_SUCCESS).toBeDefined();
+    const expectedActions = [
+      {type: SESSION_REQUEST},
+      {type: CLEAR_LOGIN_FORM},
+      {type: SESSION_SUCCESS}
+    ];
+
+    const store = mockStore({}, expectedActions);
+    return store.dispatch(actions.getSession());
   });
 });
